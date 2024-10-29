@@ -1,8 +1,3 @@
-# ------------------------------------------------------------
-# calclex.py
-#
-# Tokenizer para um analisador léxico com tokens básicos.
-# ------------------------------------------------------------
 import ply.lex as lex
 
 # Classe Lex para o lexer
@@ -79,7 +74,6 @@ class Lex:
     t_OP_COMP = r'(\>|\<|\=\=|\!\=|\>\=|\<\=)'
     t_OP_MAT = r'\+|\-|\*|\/'
     t_PONTO = r'\.'
-    t_COMENTARIO = r'\#'
 
     # A string containing ignored characters (spaces and tabs)
     t_ignore  = ' \t'
