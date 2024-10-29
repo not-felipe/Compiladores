@@ -1,114 +1,123 @@
-    # ------------------------------------------------------------
+# ------------------------------------------------------------
 # calclex.py
 #
-# tokenizer for a simple expression evaluator for
-# numbers and +,-,*,/
+# Tokenizer para um analisador léxico com tokens básicos.
 # ------------------------------------------------------------
 import ply.lex as lex
 
-# List of token names.   This is always required
-reservadas = {
-    'begin': 'BEGIN',
-    'end': 'END',
-    'const': 'CONST',
-    'type': 'TYPE',
-    'var': 'VAR',
-    'integer': 'INTEGER',
-    'char': 'CHAR',
-    'boolean': 'BOOLEAN',
-    'array': 'ARRAY',
-    'of': 'OF',
-    'record': 'RECORD',
-    'procedure': 'PROCEDURE',
-    'while': 'WHILE',
-    'do': 'DO',
-    'if': 'IF',
-    'then': 'THEN',
-    'for': 'FOR',
-    'write': 'WRITE',
-    'read': 'READ',
-    'to': 'TO',
-    'else': 'ELSE',
-    'false': 'FALSE',
-    'true': 'TRUE',
-    'and': 'AND',
-    'or': 'OR'
-}
+# Classe Lex para o lexer
+class Lex:
+    
+    def __init__(self):
+        # Constrói o lexer
+        self.lexer = lex.lex(module=self)
+        # Lista de tokens
+        self.tokens_lista = []
+        # Lista de erros léxicos
+        self.erros = []
+        
+    reservadas = {
+        'begin': 'BEGIN',
+        'end': 'END',
+        'const': 'CONST',
+        'type': 'TYPE',
+        'var': 'VAR',
+        'integer': 'INTEGER',
+        'real': 'REAL',
+        'char': 'CHAR',
+        'boolean': 'BOOLEAN',
+        'array': 'ARRAY',
+        'of': 'OF',
+        'record': 'RECORD',
+        'procedure': 'PROCEDURE',
+        'while': 'WHILE',
+        'do': 'DO',
+        'if': 'IF',
+        'then': 'THEN',
+        'for': 'FOR',
+        'write': 'WRITE',
+        'read': 'READ',
+        'to': 'TO',
+        'else': 'ELSE',
+        'false': 'FALSE',
+        'true': 'TRUE',
+        'and': 'AND',
+        'or': 'OR'
+    }
 
+    tokens = [
+        'ID',
+        'NUMERO',
+        'CONST_VALOR',
+        'IGUAL',
+        'PONTO_VIRGULA',
+        'VIRGULA',
+        'COLCHETE_ESQ',
+        'COLCHETE_DIR',
+        'DOIS_PONTOS',
+        'PARENTESE_ESQ',
+        'PARENTESE_DIR',
+        'ATRIBUICAO',
+        'OP_COMP',
+        'OP_MAT',
+        'PONTO',
+        'COMENTARIO'
+    ] + list(reservadas.values())
 
-tokens = (
-   'ID',
-   'NUMERO',
-   'CONST_VALOR',
-   'IGUAL',
-   'PONTO_VIRGULA',
-   'VIRGULA',
-   'COLCHETE_ESQ',
-   'COLCHETE_DIR',
-   'DOIS_PONTOS',
-   'PARENTESE_ESQ',
-   'PARENTESE_DIR',
-   'ATRIBUICAO',
-   'OP_COMP',
-   'OP_MAT',
-   'PONTO',
-   'COMENTARIO'
-)
+    # Regular expressions for simple tokens
+    t_NUMERO = r'\d+(\.\d+)?'
+    t_CONST_VALOR = r'"[^"]*"'
+    t_IGUAL = r'\='
+    t_PONTO_VIRGULA = r'\;'
+    t_VIRGULA = r'\,'
+    t_COLCHETE_ESQ = r'\['
+    t_COLCHETE_DIR = r'\]'
+    t_DOIS_PONTOS = r'\:'
+    t_PARENTESE_ESQ = r'\('
+    t_PARENTESE_DIR = r'\)'
+    t_ATRIBUICAO = r'\:\='
+    t_OP_COMP = r'(\>|\<|\=\=|\!\=|\>\=|\<\=)'
+    t_OP_MAT = r'\+|\-|\*|\/'
+    t_PONTO = r'\.'
+    t_COMENTARIO = r'\#'
 
-# Regular expression rules for simple tokens
+    # A string containing ignored characters (spaces and tabs)
+    t_ignore  = ' \t'
 
-t_ID = r'^[a-zA-Z][a-zA-Z0-9]*$'
-t_NUMERO = r'^\d+(\.\d+)?$'
-t_CONST_VALOR = r'^".+"$'
-t_IGUAL = r'\='
-t_PONTO_VIRGULA = r'\;'
-t_VIRGULA = r'\,'
-t_COLCHETE_ESQ = r'\['
-t_COLCHETE_DIR = r'\]'
-t_DOIS_PONTOS = r'\:'
-t_PARENTESE_ESQ = r'\('
-t_PARENTESE_DIR = r'\)'
-t_ATRIBUICAO = r'\:\='
-t_OP_COMP = r'^(>|<|==|!=|>=|<=)$'
-t_OP_MAT = r'^(\+|\-|*|\/)$'
-t_PONTO = r'\.'
-t_COMENTARIO = r'\#'
+    # Recognizes identifiers and reserved words
+    def t_ID(self, t):
+        r'[a-zA-Z][a-zA-Z0-9]*'
+        t.type = self.reservadas.get(t.value, 'ID') # Check for reserved words
+        return t
+    
+    # Tracks line numbers
+    def t_newline(self, t):
+        r'\n+'
+        t.lexer.lineno += len(t.value)
 
+    # Error handling rule
+    def t_error(self, t):
+        self.erros.append(t.value, t.lineno)
+        print(f"Illegal character '{t.value[0]}' at line '{t.lineno}'")
+        t.lexer.skip(1)
 
-# A regular expression rule with some action code
-def t_NUMBER(t):
-    r'\d+'
-    t.value = int(t.value)    
-    return t
+    # Test function for lexer
+    def test(self, data):
+        # Give lexer some input
+        self.lexer.input(data)
 
-# Define a rule so we can track line numbers
-def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += len(t.value)
+        # Tokenize and store results
+        while True:
+            tok = self.lexer.token()
+            if not tok: 
+                break      # No more input
+            self.tokens_lista.append(tok)
+            print(tok)
 
-# A string containing ignored characters (spaces and tabs)
-t_ignore  = ' \t'
+# Exemplo de uso
 
-# Error handling rule
-def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
-    t.lexer.skip(1)
+file = open("programa.sp","r")
+programa = file.read()
 
-# Build the lexer
-lexer = lex.lex()
-
-# Test it out
-data = '''
-3 + 4 * 10
-  + -20 *2
-'''
-
-# Give the lexer some input
-lexer.input(data)
-
-# Tokenize
-while True:
-    tok = lexer.token()
-    if not tok: 
-        break      # No more input
-    print(tok)
+lexer = Lex()
+lexer.test(programa)
