@@ -4,11 +4,8 @@ import ply.lex as lex
 class Lex:
     
     def __init__(self):
-        # Constrói o lexer
         self.lexer = lex.lex(module=self)
-        # Lista de tokens
         self.tokens_lista = []
-        # Lista de erros léxicos
         self.erros = []
         
     reservadas = {
@@ -84,6 +81,11 @@ class Lex:
         t.type = self.reservadas.get(t.value, 'ID') # Check for reserved words
         return t
     
+    def t_COMENTARIO(self, t):
+        r'\{[^}]*\}' # Reconhece comentários como blocos entre { }, como em Pascal
+        t.lexer.lineno += t.value.count('\n')
+        pass  
+    
     # Tracks line numbers
     def t_newline(self, t):
         r'\n+'
@@ -91,7 +93,7 @@ class Lex:
 
     # Error handling rule
     def t_error(self, t):
-        self.erros.append(t.value, t.lineno)
+        self.erros.append((t.value, t.lineno))
         print(f"Illegal character '{t.value[0]}' at line '{t.lineno}'")
         t.lexer.skip(1)
 
@@ -110,7 +112,7 @@ class Lex:
 
 # Exemplo de uso
 
-file = open("programa.sp","r")
+file = open("exemplo1.sp","r")
 programa = file.read()
 
 lexer = Lex()
