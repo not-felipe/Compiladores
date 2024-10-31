@@ -1,12 +1,9 @@
 import ply.lex as lex
-
-# Classe Lex para o lexer
 class Lex:
     
     def __init__(self):
         self.lexer = lex.lex(module=self)
-        self.tokens_lista = []
-        self.erros = []
+        self.tokens_lista = [] # estrutura utilizada para armazenar os tokens na memoria
         
     reservadas = {
         'begin': 'BEGIN',
@@ -93,7 +90,6 @@ class Lex:
 
     # Error handling rule
     def t_error(self, t):
-        self.erros.append((t.value, t.lineno))
         print(f"Illegal character '{t.value[0]}' at line '{t.lineno}'")
         t.lexer.skip(1)
 
@@ -108,7 +104,7 @@ class Lex:
             if not tok: 
                 break      # No more input
             self.tokens_lista.append(tok)
-            print(tok)
+            #print(tok)
 
 # Exemplo de uso
 
@@ -117,3 +113,5 @@ programa = file.read()
 
 lexer = Lex()
 lexer.test(programa)
+for tokens in lexer.tokens_lista:
+ print(tokens)
